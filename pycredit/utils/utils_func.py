@@ -7,6 +7,7 @@ import sys
 import polars as pl
 import pandas as pd
 import numpy as np
+import math
 
 def _check_attrs(*attrs):
     """
@@ -51,3 +52,29 @@ def to_polars_dataframe(data: [pd.DataFrame, np.ndarray, pl.DataFrame]) -> pl.Da
     else:
         Logger().log("error", f"输入数据为{type(data)}，无法转换为 Polars DataFrame。请提供 Pandas DataFrame、Numpy 数组或 Polars DataFrame。")
         sys.exit(-1)
+
+
+def score_transfer(prob, pdo=20, base_odds=20, base_score=600):
+    """
+    转换评分
+
+    Parameters
+    ----------
+    prob: array-like (n_samples,)
+        预测概率
+    pdo: float
+        两倍odds增长评分
+    base_odds: float
+        基准odds
+    base_score: float
+        基准评分
+
+    Returns
+    -------
+    score: array-like (n_samples,)
+        转换后的评分
+    """
+    B = pdo / math.log(2)
+    A = base_score + B * math.log(base_odds)
+    score = A - B * (np.log(prob) / (1 - np.log(prob)))
+    return score
