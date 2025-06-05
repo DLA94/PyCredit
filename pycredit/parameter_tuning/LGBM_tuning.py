@@ -169,7 +169,21 @@ class LGBMTuning():
         object
             最优分类器
         '''
-        params = self.study_.best_params
+        params = self.get_best_params()
+        best_estimator = self.base_estimator_(**params)
+        return best_estimator
+
+    def get_best_params(self):
+        '''
+        获取最优参数
+
+        Returns
+        -------
+        best_params: dict
+            最优参数字典
+        '''
+        params = {'objective': 'binary', 'importance_type': 'gain', 'silent': False, 'verbosity': -1}
+        params = {**params, **self.study_.best_params}
         params = {
             key: value for key, value in params.items()
             if key not in {
@@ -178,8 +192,7 @@ class LGBMTuning():
                 'goss': ['other_rate', 'subsample_freq', 'subsample']
             }[params['boosting_type']]
         }
-        best_estimator = self.base_estimator_(**params)
-        return best_estimator
+        return params
 
     def study_plot(self, info='history'):
         '''
